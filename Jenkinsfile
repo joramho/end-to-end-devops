@@ -1,11 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/joramho/end-to-end-devops.git'
-            }
-        }
         stage('Test') {
             steps {
                 sh 'pip install -r requirements.txt'
