@@ -1,4 +1,4 @@
-# End-to-End-Devops
+# End-to-End-Devops Portfolio
 
 ## Overview
 Github -> Jenkins -> Docker/EC2 -> Auto-Scaling -> New Relic -> S3
