@@ -3,12 +3,12 @@ pipeline {
     stages {
         stage('Test') {
             steps {
-                sh ```
+                sh """
                     python3 -m ensurepip --upgrade
                     python3 -m pip install --upgrade pip
                     python3 -m pip install -r requirements.txt
                     python3 -m unittest discover tests
-                ```
+                """
             }
         }
         stage('Deploy') {
