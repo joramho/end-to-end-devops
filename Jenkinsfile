@@ -1,0 +1,23 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/joramho/end-to-end-devops/app.git'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'pip install -r requirements.txt'
+                sh 'python -m unittest discover tests'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                // SSH deploy to EC2
+                sh 'scp -r * ec2-user@44.246.138.83:/home/ec2-user/app/'
+                sh 'ssh ec2-user@44.246.138.83 "cd /home/ec2-user/app && nohup python3 app.py &"'
+            }
+        }
+    }
+}
