@@ -47,8 +47,3 @@ cdk deploy
 Tear Down
 ```
 cdk destroy
-<<<<<<< HEAD
-```
-=======
-```
->>>>>>> c16fd49426d2768ed4a701d54a132ea341299255
