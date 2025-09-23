@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/joramho/end-to-end-devops/app.git'
+                git 'https://github.com/joramho/end-to-end-devops.git'
             }
         }
         stage('Test') {
