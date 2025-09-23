@@ -1,50 +1,59 @@
-# End-to-End-Devops
 
-## Overview
-Github -> Jenkins -> Docker/EC2 -> Auto-Scaling -> New Relic -> S3
+# Welcome to your CDK Python project!
 
-### Tech Stack
-* Infra - CDK stack
-* App - Node.js or Python Web app on EC2
-* CI/CD - Jenkins
-* Monitoring - New Relic
-* Observability - Lambda logs
+This is a blank project for CDK development with Python.
 
-### Step 1
-Web App (see app.py, requirements.txt, Dockerfile (optional))
+The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-### Step 2
-Deploy App to EC2
-Install AWS CDK
+This project is set up like a standard Python project.  The initialization
+process also creates a virtualenv within this project, stored under the `.venv`
+directory.  To create the virtualenv it assumes that there is a `python3`
+(or `python` for Windows) executable in your path with access to the `venv`
+package. If for any reason the automatic creation of the virtualenv fails,
+you can create the virtualenv manually.
+
+To manually create a virtualenv on MacOS and Linux:
+
 ```
-npm install -g aws-cdk
+$ python3 -m venv .venv
 ```
-Create virtual env & install dependencies
+
+After the init process completes and the virtualenv is created, you can use the following
+step to activate your virtualenv.
+
 ```
-python3 -m venv .venv
-source .venv/bin/activate
+$ source .venv/bin/activate
 ```
-Install CDK Python packages
+
+If you are a Windows platform, you would activate the virtualenv like this:
+
 ```
-pip install aws-cdk-lib constructs
+% .venv\Scripts\activate.bat
 ```
-Initialize CDK app
+
+Once the virtualenv is activated, you can install the required dependencies.
+
 ```
-mkdir cdk-vpc-ec2-s3
-cd cdk-vpc-ec2-s3
-cdk init app --language python
-``` 
-Add resources to be deployed to app (see cdk_vpc_ec2_s3_stack file)
-Bootstrap CDK (only done once per region, deploys toolkit resources needed for CDK to work in that region)
+$ pip install -r requirements.txt
 ```
-cdk bootstrap
+
+At this point you can now synthesize the CloudFormation template for this code.
+
 ```
-Synthesize & Deploy CDK stack
+$ cdk synth
 ```
-cdk synth
-cdk deploy
-```
-Tear Down
-```
-cdk destroy
-```
+
+To add additional dependencies, for example other CDK libraries, just add
+them to your `setup.py` file and rerun the `pip install -r requirements.txt`
+command.
+
+## Useful commands
+
+ * `cdk ls`          list all stacks in the app
+ * `cdk synth`       emits the synthesized CloudFormation template
+ * `cdk deploy`      deploy this stack to your default AWS account/region
+ * `cdk diff`        compare deployed stack with current state
+ * `cdk docs`        open CDK documentation
+
+Enjoy!
+
