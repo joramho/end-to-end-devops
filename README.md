@@ -47,3 +47,4 @@ cdk deploy
 Tear Down
 ```
 cdk destroy
+```
