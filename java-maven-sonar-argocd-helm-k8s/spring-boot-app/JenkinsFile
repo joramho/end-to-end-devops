@@ -1,94 +1,9 @@
 pipeline {
     agent any
-
-    environment {
-        SONAR_URL = "http://54.214.94.198:9000"
-        GIT_REPO_NAME = "end-to-end-devops"
-        GIT_USER_NAME = "joramho"
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Docker') {
             steps {
-                echo 'Checking out repository'
-                git branch: 'main', url: 'https://github.com/joramho/end-to-end-devops.git'
-            }
-        }
-
-        stage('Build and Test') {
-            agent {
-                docker {
-                    image 'abhishekf5/maven-abhishek-docker-agent:v1'
-                    args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-            steps {
-                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                    echo 'Building Maven project'
-                    sh 'mvn clean package'
-                }
-            }
-        }
-
-        stage('Static Code Analysis') {
-            agent {
-                docker {
-                    image 'abhishekf5/maven-abhishek-docker-agent:v1'
-                    args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-            steps {
-                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                        echo 'Running SonarQube analysis'
-                        sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
-                    }
-                }
-            }
-        }
-
-        stage('Build and Push Docker Image') {
-            agent {
-                docker {
-                    image 'docker:24-dind'
-                    args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-            environment {
-                DOCKER_IMAGE = "abhishekf5/ultimate-cicd:${BUILD_NUMBER}"
-                REGISTRY_CREDENTIALS = credentials('docker-cred')
-            }
-            steps {
-                dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                    echo "Building Docker image ${DOCKER_IMAGE}"
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
-
-                    echo "Pushing Docker image to Docker Hub"
-                    script {
-                        def dockerImage = docker.image("${DOCKER_IMAGE}")
-                        docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-                            dockerImage.push()
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Update Deployment File') {
-            steps {
-                withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                    dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests') {
-                        echo 'Updating deployment.yml with new build number'
-                        sh '''
-                            git config user.email "joramhoward@gmail.com"
-                            git config user.name "Joram Howard"
-                            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" deployment.yml
-                            git add deployment.yml
-                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                        '''
-                    }
-                }
+                sh 'docker run hello-world'
             }
         }
     }
