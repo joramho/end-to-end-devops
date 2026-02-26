@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'abhishekf5/maven-abhishek-docker-agent:v1'
+            args '--user root'
+        }
+    }
 
     environment {
         SONAR_URL = "http://54.214.94.198:9000"
@@ -16,9 +21,7 @@ pipeline {
         }
 
         stage('Build and Test') {
-            agent { docker { image 'abhishekf5/maven-abhishek-docker-agent:v1' args '--user root' } }
             steps {
-                echo 'Building Maven project'
                 dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
                     sh 'mvn clean package'
                 }
@@ -26,7 +29,6 @@ pipeline {
         }
 
         stage('Static Code Analysis') {
-            agent { docker { image 'abhishekf5/maven-abhishek-docker-agent:v1' args '--user root' } }
             steps {
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
@@ -39,7 +41,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             agent {
                 docker {
-                    image 'docker:24-dind' // Docker-in-Docker agent
+                    image 'docker:24-dind'
                     args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
@@ -49,10 +51,7 @@ pipeline {
             }
             steps {
                 dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
-                    echo 'Building Docker image'
                     sh 'docker build -t ${DOCKER_IMAGE} .'
-
-                    echo 'Pushing Docker image to Docker Hub'
                     script {
                         def dockerImage = docker.image("${DOCKER_IMAGE}")
                         docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
