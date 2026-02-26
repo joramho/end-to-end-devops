@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'abhishekf5/maven-abhishek-docker-agent:v1'
-            args '--user root'
-        }
-    }
+    agent any
 
     environment {
         SONAR_URL = "http://54.214.94.198:9000"
@@ -21,17 +16,31 @@ pipeline {
         }
 
         stage('Build and Test') {
+            agent {
+                docker {
+                    image 'abhishekf5/maven-abhishek-docker-agent:v1'
+                    args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
             steps {
                 dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+                    echo 'Building Maven project'
                     sh 'mvn clean package'
                 }
             }
         }
 
         stage('Static Code Analysis') {
+            agent {
+                docker {
+                    image 'abhishekf5/maven-abhishek-docker-agent:v1'
+                    args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
             steps {
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+                        echo 'Running SonarQube analysis'
                         sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
                     }
                 }
@@ -51,7 +60,10 @@ pipeline {
             }
             steps {
                 dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app') {
+                    echo "Building Docker image ${DOCKER_IMAGE}"
                     sh 'docker build -t ${DOCKER_IMAGE} .'
+
+                    echo "Pushing Docker image to Docker Hub"
                     script {
                         def dockerImage = docker.image("${DOCKER_IMAGE}")
                         docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
@@ -66,6 +78,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                     dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests') {
+                        echo 'Updating deployment.yml with new build number'
                         sh '''
                             git config user.email "joramhoward@gmail.com"
                             git config user.name "Joram Howard"
