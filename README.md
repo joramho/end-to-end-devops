@@ -1,9 +1,5 @@
 # Jenkins-Zero-To-Hero
-
-Are you looking forward to learn Jenkins right from Zero(installation) to Hero(Build end to end pipelines)? then you are at the right place. 
-
 ## Installation on EC2 Instance
-
 YouTube Video ->
 https://www.youtube.com/watch?v=zZfhAXfBvVA&list=RDCMUCnnQ3ybuyFdzvgv2Ky5jnAA&index=1
 
@@ -31,25 +27,19 @@ Install Java
 
 ```
 sudo apt update
-sudo apt install openjdk-17-jre
+sudo apt install openjdk-17-jre -y
 ```
 
-Verify Java is Installed
+Install Docker
 
 ```
-java -version
+sudo apt update
+sudo apt install -y docker.io
 ```
 
-Now, you can proceed with installing Jenkins
-
+Run Jenkins via Docker
 ```
-curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-  https://pkg.jenkins.io/debian binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt-get update
-sudo apt-get install jenkins
+sudo docker run -d   -p 8080:8080 -p 50000:50000   --name jenkins   --restart=unless-stopped   -v jenkins_home:/var/jenkins_home   jenkins/jenkins:lts
 ```
 
 **Note: ** By default, Jenkins will not be accessible to the external world due to the inbound traffic restriction by AWS. Open port 8080 in the inbound traffic rules as show below.
@@ -69,12 +59,20 @@ http://<ec2-instance-public-ip-address>:8080    [You can get the ec2-instance-pu
 Note: If you are not interested in allowing `All Traffic` to your EC2 instance
       1. Delete the inbound traffic rule for your instance
       2. Edit the inbound traffic rule to only allow custom TCP port `8080`
-  
+
+Check if Jenkins is running:
+```
+ps -ef | grep jenkins
+```
+
 After you login to Jenkins, 
-      - Run the command to copy the Jenkins Admin Password - `sudo cat /var/lib/jenkins/secrets/initialAdminPassword`
+      - Run the command to copy the Jenkins Admin Password - `sudo cat /var/lib/jenkins/secrets/initialAdminPassword` or `sudo docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword` (may need sudo)
       - Enter the Administrator password
       
 <img width="1291" alt="Screenshot 2023-02-01 at 10 56 25 AM" src="https://user-images.githubusercontent.com/43399466/215959008-3ebca431-1f14-4d81-9f12-6bb232bfbee3.png">
+
+Create Pipeline from SCM, Git, Attach Repo URL, verify master/main branch, and Jenkinsfile script path, apply!
+
 
 ### Click on Install suggested plugins
 
@@ -98,11 +96,25 @@ Jenkins Installation is Successful. You can now starting using the Jenkins
    - Go to Manage Jenkins > Manage Plugins.
    - In the Available tab, search for "Docker Pipeline".
    - Select the plugin and click the Install button.
-   - Restart Jenkins after the plugin is installed.
    
 <img width="1392" alt="Screenshot 2023-02-01 at 12 17 02 PM" src="https://user-images.githubusercontent.com/43399466/215973898-7c366525-15db-4876-bd71-49522ecb267d.png">
 
-Wait for the Jenkins to be restarted.
+## Install the SonarQube Scanner plugin
+Set up Sonarqube
+```
+sudo su -
+apt install unzip
+adduser sonarqube
+su - sonarqube
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.4.1.88267.zip
+unzip *
+chown -R sonarqube:sonarqube /home/sonarqube
+chmod -R 775 /home/sonarqube
+cd /home/sonarqube/sonarqube-*/bin/linux-x86-64
+./sonar.sh start
+```
+
+Hurray !! Now you can access the `SonarQube Server` on `http://<ip-address>:9000` 
 
 
 ## Docker Slave Configuration
