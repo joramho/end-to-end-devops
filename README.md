@@ -14,8 +14,6 @@ Install Jenkins, configure Docker as agent, set up cicd, deploy applications to 
 - Instances(running)
 - Launch instances
 
-<img width="994" alt="Screenshot 2023-02-01 at 12 37 45 PM" src="https://user-images.githubusercontent.com/43399466/215974891-196abfe9-ace0-407b-abd2-adcffe218e3f.png">
-
 ### Install Jenkins.
 
 Pre-Requisites:
@@ -27,17 +25,54 @@ Install Java
 
 ```
 sudo apt update
-sudo apt install openjdk-17-jre -y
+sudo apt install fontconfig openjdk-21-jre -y
+java -version
 ```
 
-Install Docker
+Install Jenkins
+
+```
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt update
+sudo apt install jenkins
+```
+
+Start Jenkins (Legacy)
+
+```
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
+
+
+Install Docker (on same Jenkins machine)
 
 ```
 sudo apt update
 sudo apt install -y docker.io
 ```
 
-Run Jenkins via Docker
+Grant docker deamon permissions to Jenkins and Ubuntu users
+```
+sudo su -
+usermod -aG docker jenkins
+usermod -aG docker ubuntu
+systemctl restart docker
+```
+
+Switch to Jenkins User
+
+```
+sudo su - jenkins
+```
+
+Run Jenkins via Docker agent (Modern)
 ```
 sudo docker run -d   -p 8080:8080 -p 50000:50000   --name jenkins   --restart=unless-stopped   -v jenkins_home:/var/jenkins_home   jenkins/jenkins:lts
 ```
